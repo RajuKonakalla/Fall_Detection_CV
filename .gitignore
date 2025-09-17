@@ -2,9 +2,5 @@
 __pycache__/
 *.pyc
 
-# Ignore model weights and video files
-*.pt
-*.mp4
-
 # Ignore VSCode settings
 .vscode/
