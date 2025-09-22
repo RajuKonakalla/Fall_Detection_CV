@@ -10,9 +10,28 @@ When a fall is detected, the bounding box of the person changes color to red, an
 
 ## Demo
 
-![Fall Detection Demo](demo.gif)
+![Fall Detection Demo](fall.gif)
 
 *(Note: You can replace `demo.gif` with a GIF of the fall detection in action.)*
+
+## How it Works
+
+The fall detection system works by analyzing each frame of the video feed and applying multiple detection criteria:
+
+![Fall Detection in Action](fall_detection_demo.png)
+
+*Example of the fall detection system working in a warehouse environment. The system detects a fallen person (red bounding box) and displays an alert, while correctly identifying standing individuals (green bounding boxes).*
+
+The fall detection logic is implemented in the `detect_fall` function. It uses a combination of the following methods to identify a fall:
+
+1.  **Aspect Ratio:** A fallen person is likely to have a bounding box with a larger width-to-height ratio.
+2.  **Relative Height:** A fallen person's bounding box will be smaller in height compared to the frame's height.
+3.  **Vertical Position:** A fallen person is often located in the lower part of the frame.
+4.  **Bounding Box Area vs. Height:** This ratio can indicate a change in posture.
+5.  **Sudden Drop:** A rapid downward movement can signify a fall.
+6.  **Consistent Low Aspect Ratio:** A low aspect ratio over several frames provides a more robust fall detection.
+
+A "fall score" is calculated based on these indicators. If the score exceeds a certain threshold, the person is considered to have fallen.
 
 ## Installation
 
@@ -63,19 +82,6 @@ This project includes several pre-trained YOLO models:
 *   `model.pt`
 
 You can specify which model to use with the `--model` argument.
-
-## How it Works
-
-The fall detection logic is implemented in the `detect_fall` function. It uses a combination of the following methods to identify a fall:
-
-1.  **Aspect Ratio:** A fallen person is likely to have a bounding box with a larger width-to-height ratio.
-2.  **Relative Height:** A fallen person's bounding box will be smaller in height compared to the frame's height.
-3.  **Vertical Position:** A fallen person is often located in the lower part of the frame.
-4.  **Bounding Box Area vs. Height:** This ratio can indicate a change in posture.
-5.  **Sudden Drop:** A rapid downward movement can signify a fall.
-6.  **Consistent Low Aspect Ratio:** A low aspect ratio over several frames provides a more robust fall detection.
-
-A "fall score" is calculated based on these indicators. If the score exceeds a certain threshold, the person is considered to have fallen.
 
 ## Contributing
 
