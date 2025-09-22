@@ -10,9 +10,7 @@ When a fall is detected, the bounding box of the person changes color to red, an
 
 ## Demo
 
-![Fall Detection Demo](fall.gif)
-
-*(Note: You can replace `demo.gif` with a GIF of the fall detection in action.)*
+![Fall Detection Demo](https://github.com/RajuKonakalla/Fall_Detection_CV/blob/master/falling.gif?raw=true)
 
 ## How it Works
 
