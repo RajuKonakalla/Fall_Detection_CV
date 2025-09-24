@@ -93,7 +93,11 @@ def detect_fall(x1, y1, x2, y2, track_id, frame_height, previous_positions, posi
 def main(args):
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-    model = YOLO(args.model)
+    if args.openvino_model:
+        model = YOLO(args.openvino_model)
+    else:
+        model = YOLO(args.model)
+        
     names = model.names
 
     source = args.source
@@ -171,9 +175,10 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fall detection using YOLO.")
-    parser.add_argument("--model", type=str, default="yolov8s.pt", help="Path to the YOLO model.")
-    parser.add_argument("--source", type=str, default="queda.mp4", help="Path to video source or '0' for webcam.")
-    parser.add_argument("--conf", type=float, default=0.5, help="Confidence threshold for detection.")
+    parser.add_argument("--model", type=str, default="yolov8n.pt", help="Path to the YOLO model.")
+    parser.add_argument("--openvino_model", type=str, default=None, help="Path to the OpenVINO model directory.")
+    parser.add_argument("--source", type=str, default="yashu.mp4", help="Path to video source or '0' for webcam.")
+    parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold for detection.")
     parser.add_argument("--debug", action='store_true', help="Enable debug information on screen.")
     parser.add_argument("--frame_skip", type=int, default=2, help="Number of frames to skip between detections.")
     parser.add_argument("--frame_width", type=int, default=1020, help="Width of the input frames.")
