@@ -175,9 +175,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fall detection using YOLO.")
-    parser.add_argument("--model", type=str, default="yolov8n.pt", help="Path to the YOLO model.")
-    parser.add_argument("--openvino_model", type=str, default=None, help="Path to the OpenVINO model directory.")
-    parser.add_argument("--source", type=str, default="yashu.mp4", help="Path to video source or '0' for webcam.")
+    parser.add_argument("--model", type=str, default=None, help="Path to the YOLO model.")
+    parser.add_argument("--openvino_model", type=str, default="yolov8n_openvino_model", help="Path to the OpenVINO model directory.")
+    parser.add_argument("--source", type=str, default="school.mp4", help="Path to video source or '0' for webcam.")
     parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold for detection.")
     parser.add_argument("--debug", action='store_true', help="Enable debug information on screen.")
     parser.add_argument("--frame_skip", type=int, default=2, help="Number of frames to skip between detections.")
