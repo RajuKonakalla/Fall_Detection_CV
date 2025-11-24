@@ -11,7 +11,10 @@ import time
 def main():
     st.set_page_config(layout="wide", page_title="Fall Detection AI")
 
-
+    if 'running' not in st.session_state:
+        st.session_state.running = False
+    if 'paused' not in st.session_state:
+        st.session_state.paused = False
 
     # --- Swiss Design Inspired Dark Theme CSS ---
     st.markdown("""
@@ -91,9 +94,9 @@ def main():
         with st.container():
             st.markdown('<div class="card">', unsafe_allow_html=True)
             st.subheader("Model Settings")
-            model_choice = st.selectbox("YOLO Model", ["yolov8s_openvino_model/", "yolov8n_openvino_model/", "yolo12n_openvino_model/", "yolov8n.pt", "yolov8s.pt", "best.pt", "model.pt"], label_visibility="collapsed")
+            model_choice = st.selectbox("YOLO Model", ["yolov8n.pt", "yolov8s.pt", "best.pt", "yolo12n.pt", "yolo12s.pt", "yolo12x.pt", "model.pt", "yolov8n_openvino_model/", "yolo12n_openvino_model/"], label_visibility="collapsed")
             st.subheader("Confidence Threshold")
-            conf_threshold = st.slider("", 0.0, 1.0, 0.30, 0.05, label_visibility="collapsed")
+            conf_threshold = st.slider("", 0.0, 1.0, 0.25, 0.05, label_visibility="collapsed")
             st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
@@ -112,45 +115,60 @@ def main():
             if source_option == "Upload a video" and uploaded_file is None:
                 video_placeholder.markdown("<div style='height: 400px; display: flex; align-items: center; justify-content: center; background-color: #262626; border-radius: 8px;'><p style='text-align: center; color: #555555;'>Upload a video to begin analysis</p></div>", unsafe_allow_html=True)
             elif source_option == "Webcam":
-                video_placeholder.markdown("<div style='height: 400px; display: flex; align-items: center; justify-content: center; background-color: #262626; border-radius: 8px;'><p style='text-align: center; color: #555555;'>Starting Webcam...</p></div>", unsafe_allow_html=True)
+                video_placeholder.markdown("<div style='height: 400px; display: flex; align-items: center; justify-content: center; background-color: #262626; border-radius: 8px;'><p style='text-align: center; color: #555555;'>Click 'Start Webcam' to begin analysis</p></div>", unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-
-
-
-
-    source = None
-    if source_option == "Upload a video":
-        if uploaded_file is not None:
-            tfile = tempfile.NamedTemporaryFile(delete=False)
-            tfile.write(uploaded_file.read())
-            tfile.close()
-            source = tfile.name
+    # --- Control Buttons ---
+    if not st.session_state.running:
+        if st.button("Start"):
+            st.session_state.running = True
     else:
-        source = 0
+        col1, col2, col3 = st.columns([1, 1, 5])
+        with col1:
+            if st.button("Pause" if not st.session_state.paused else "Resume"):
+                st.session_state.paused = not st.session_state.paused
+        with col2:
+            if st.button("Stop"):
+                st.session_state.running = False
+                st.session_state.paused = False
 
-    if source is not None:
+
+
+    if st.session_state.running:
+        
+        source = None
+        if source_option == "Upload a video":
+            if uploaded_file is not None:
+                tfile = tempfile.NamedTemporaryFile(delete=False)
+                tfile.write(uploaded_file.read())
+                source = tfile.name
+            else:
+                st.warning("Please upload a video file.")
+                st.stop()
+        else:
+            source = 0
+
         cap = cv2.VideoCapture(source)
 
         parser = argparse.ArgumentParser(description="Fall detection using YOLO.")
         parser.add_argument("--model", type=str, default=model_choice, help="Path to the YOLO model.")
         parser.add_argument("--source", type=str, default=source, help="Path to video source or '0' for webcam.")
         parser.add_argument("--conf", type=float, default=conf_threshold, help="Confidence threshold for detection.")
-        parser.add_argument("--frame_skip", type=int, default=3, help="Number of frames to skip between detections.")
-        parser.add_argument("--frame_width", type=int, default=854, help="Width of the input frames.")
-        parser.add_argument("--frame_height", type=int, default=480, help="Height of the input frames.")
-        parser.add_argument("--aspect_ratio_threshold", type=float, default=1.5)
+        parser.add_argument("--frame_skip", type=int, default=2, help="Number of frames to skip between detections.")
+        parser.add_argument("--frame_width", type=int, default=1020, help="Width of the input frames.")
+        parser.add_argument("--frame_height", type=int, default=600, help="Height of the input frames.")
+        parser.add_argument("--aspect_ratio_threshold", type=float, default=1.3)
         parser.add_argument("--relative_height_threshold", type=float, default=0.15)
         parser.add_argument("--vertical_position_threshold", type=float, default=0.7)
         parser.add_argument("--area_height_ratio_threshold", type=float, default=1.5)
         parser.add_argument("--sudden_drop_threshold", type=float, default=30)
         parser.add_argument("--speed_threshold", type=float, default=10)
-        parser.add_argument("--consistent_fall_frames", type=int, default=10)
+        parser.add_argument("--consistent_fall_frames", type=int, default=5)
         parser.add_argument("--consistent_fall_ratio_threshold", type=float, default=1.2)
         parser.add_argument("--consistent_fall_count_threshold", type=int, default=3)
         parser.add_argument("--fall_confirmation_frames", type=int, default=10)
-        parser.add_argument("--fall_score_threshold", type=int, default=4)
+        parser.add_argument("--fall_score_threshold", type=int, default=2)
         args = parser.parse_args([])
 
         model = YOLO(args.model)
@@ -160,13 +178,15 @@ def main():
         previous_positions = {}
         position_history = {}
         fall_status = {}
-        prev_frame_time = 0
-        new_frame_time = 0
 
-        while cap.isOpened():
+        while cap.isOpened() and st.session_state.running:
+            if st.session_state.paused:
+                time.sleep(0.1)
+                continue
 
             ret, frame = cap.read()
             if not ret:
+                st.session_state.running = False
                 break
 
             frame_count += 1
@@ -176,7 +196,7 @@ def main():
             frame = cv2.resize(frame, (args.frame_width, args.frame_height))
             frame_height = frame.shape[0]
 
-            results = model.track(frame, persist=True, classes=[0], tracker="bytetrack.yaml")
+            results = model.track(frame, persist=True, classes=[0])
             
             people_count = 0
             fall_count = 0
@@ -207,26 +227,14 @@ def main():
                         
                         cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, box_thickness)
 
-                        # Draw trajectory
-                        if track_id in position_history:
-                            points = position_history[track_id]
-                            for i in range(1, len(points)):
-                                pt1 = (points[i - 1][0], points[i - 1][1])
-                                pt2 = (points[i][0], points[i][1])
-                                cv2.line(frame, pt1, pt2, box_color, 2)
-
                         if is_fallen:
                             cvzone.putTextRect(frame, f'FALL DETECTED! Score: {fall_score}', (x1, y1 - 30), 1, 1, colorR=box_color)
                             cvzone.putTextRect(frame, f'Person ID: {track_id}', (x1, y1), 1, 1, colorR=box_color)
                             cv2.putText(frame, "ALERT: PERSON HAS FALLEN!", (50, 50),
                                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                         else:
-                            cvzone.putTextRect(frame, f'ID: {track_id} | {name} {conf:.2f}', (x1, y1), 1, 1)
-
-            new_frame_time = time.time()
-            fps = 1 / (new_frame_time - prev_frame_time) if prev_frame_time > 0 else 0
-            prev_frame_time = new_frame_time
-            cvzone.putTextRect(frame, f'FPS: {int(fps)}', (20, 50), 1, 1)
+                            cvzone.putTextRect(frame, f'{name} {conf:.2f}', (x1, y1), 1, 1)
+                            cvzone.putTextRect(frame, f'Standing (Score: {fall_score})', (x1, y2 + 12), 1, 1)
 
             people_counter_placeholder.metric("People Detected", people_count)
             fall_counter_placeholder.metric("Falls Detected", fall_count)
