@@ -3,6 +3,25 @@
 ## Overview
 This project implements a real-time Fall Detection and Person Tracking system using a **YOLOv26** model optimized with **OpenVINO**. It is designed to detect and track individuals in video feeds, providing visual feedback including tracking lines and center-point estimation. The system is particularly useful for safety monitoring in environments like warehouses or care facilities.
 
+## System Workflow
+
+```mermaid
+graph TD
+    A[Input Source] -->|Video File/Stream| B(Frame Extraction)
+    B --> C{YOLOv26 OpenVINO Model}
+    C -->|Detections| D[ByteTrack Tracker]
+    D -->|Track IDs & BBoxes| E(Visualizer)
+    E -->|Draw Central Anchor| F[Output Frame]
+    E -->|Draw Tracking Lines| F
+    F --> G[Display Window]
+    G -->|'q' Key| H[Exit]
+    G -->|Next Frame| B
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#bbf,stroke:#333,stroke-width:2px
+    style G fill:#dfd,stroke:#333,stroke-width:4px
+```
+
 ## Features
 - **Advanced Detection**: Utilizes the YOLOv26 architecture for high-accuracy object detection.
 - **OpenVINO Optimization**: Leverages Intel's OpenVINO toolkit for accelerated inference on Intel hardware (CPU/GPU).
