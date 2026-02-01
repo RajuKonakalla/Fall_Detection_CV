@@ -4,6 +4,7 @@
 # Fall Detection System
 
 **Real-time surveillance and anomaly detection utilizing YOLOv26 architecture and OpenVINO optimization.**
+![Pi7_GIF_CMP](https://github.com/user-attachments/assets/ec9d776a-320b-407a-ae32-bac753922441)
 
 ## Table of Contents
 - [About the Project](#about-the-project)
