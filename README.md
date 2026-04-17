@@ -29,9 +29,9 @@ graph TD
     A[Input Source] -->|Video File/Stream| B(Frame Extraction)
     B --> C{YOLOv26 OpenVINO Model}
     C -->|Detections| D[ByteTrack Tracker]
-    D -->|Track IDs & BBoxes| E(Visualizer)
-    E -->|Draw Central Anchor| F[Output Frame]
-    E -->|Draw Tracking Lines| F
+    D -->|Track IDs & BBoxes| E(Supervision Annotators)
+    E -->|Box & Label Annotations| F[Annotated Frame]
+    E -->|Movement Traces| F
     F --> G[Display Window]
     G -->|'q' Key| H[Exit]
     G -->|Next Frame| B
@@ -47,8 +47,9 @@ graph TD
 - **Inference Optimization**: Fully optimized using the OpenVINO toolkit, enabling efficient inference on Intel CPUs and GPUs.
 - **Robust Tracking**: Implements the ByteTrack algorithm to maintain consistent identity association across temporal sequences.
 - **Visual Analytics**:
-  - **Dynamic Tracking Lines**: Visualizes the spatial relationship between detected individuals and the central reference point.
-  - **Center-Point Estimation**: Calculates and renders precise geometric centers for all tracked objects.
+  - **Dynamic Tracing**: Employs `sv.TraceAnnotator` from the *supervision* library to visualize movement paths and trajectories of tracked individuals.
+  - **Detailed Annotations**: Utilizes `sv.BoxAnnotator` and `sv.LabelAnnotator` to display clear bounding boxes, unique tracking IDs, object classes, and real-time confidence scores.
+  - **Categorical Color Coding**: Dynamically allocates distinct, high-contrast colors to individual tracking IDs from a curated palette, enhancing visibility in crowded scenarios.
 - **Versatile Input Handling**: Supports processing of both live streams and pre-recorded high-definition video footage.
 
 ## Getting Started
@@ -62,6 +63,7 @@ Ensure the following runtimes and libraries are installed on your system:
 - Python 3.8 or higher
 - Intel OpenVINO Toolkit
 - Ultralytics YOLO
+- Supervision
 - OpenCV (cv2)
 
 ### Installation
@@ -74,7 +76,7 @@ Ensure the following runtimes and libraries are installed on your system:
 
 2.  **Install dependencies**
     ```bash
-    pip install ultralytics opencv-python openvino
+    pip install ultralytics opencv-python openvino supervision
     ```
 
 ## Usage
