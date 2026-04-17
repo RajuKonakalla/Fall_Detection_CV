@@ -15,6 +15,8 @@ color = sv.ColorPalette.from_hex([
 ])
 
 box_annotator = sv.BoxAnnotator(color=color, color_lookup=sv.ColorLookup.TRACK)
+fall_box_annotator = sv.BoxAnnotator(color=sv.Color.RED, thickness=4, color_lookup=sv.ColorLookup.CLASS)
+
 label_annotator = sv.LabelAnnotator(
     color=color, color_lookup=sv.ColorLookup.TRACK, text_color=sv.Color.BLACK, text_scale=0.8
 )
@@ -44,7 +46,13 @@ while cap.isOpened():
     # Annotate frame
     annotated_frame = frame.copy()
     annotated_frame = trace_annotator.annotate(scene=annotated_frame, detections=detections)
-    annotated_frame = box_annotator.annotate(scene=annotated_frame, detections=detections)
+    
+    # Separate fall detections for special styling
+    fall_detections = detections[detections.class_id == 0]
+    other_detections = detections[detections.class_id != 0]
+    
+    annotated_frame = box_annotator.annotate(scene=annotated_frame, detections=other_detections)
+    annotated_frame = fall_box_annotator.annotate(scene=annotated_frame, detections=fall_detections)
     
     labels = []
     if len(detections) > 0 and getattr(detections, "tracker_id", None) is not None:
