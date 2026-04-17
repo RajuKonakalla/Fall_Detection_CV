@@ -20,6 +20,9 @@ fall_box_annotator = sv.BoxAnnotator(color=sv.Color.RED, thickness=4, color_look
 label_annotator = sv.LabelAnnotator(
     color=color, color_lookup=sv.ColorLookup.TRACK, text_color=sv.Color.BLACK, text_scale=0.8
 )
+fall_label_annotator = sv.LabelAnnotator(
+    color=sv.Color.RED, text_color=sv.Color.WHITE, text_scale=0.8
+)
 trace_annotator = sv.TraceAnnotator(
     color=color, color_lookup=sv.ColorLookup.TRACK, thickness=2, trace_length=100
 )
@@ -54,19 +57,20 @@ while cap.isOpened():
     annotated_frame = box_annotator.annotate(scene=annotated_frame, detections=other_detections)
     annotated_frame = fall_box_annotator.annotate(scene=annotated_frame, detections=fall_detections)
     
-    labels = []
-    if len(detections) > 0 and getattr(detections, "tracker_id", None) is not None:
-        labels = [
-            f"#{tracker_id} {result.names[class_id]} {confidence:.2f}"
-            for class_id, tracker_id, confidence in zip(detections.class_id, detections.tracker_id, detections.confidence)
-        ]
-    elif len(detections) > 0:
-        labels = [
-            f"{result.names[class_id]} {confidence:.2f}"
-            for class_id, confidence in zip(detections.class_id, detections.confidence)
-        ]
+    # Separate labels and annotate
+    def get_labels(decs):
+        if len(decs) == 0: return []
+        if getattr(decs, "tracker_id", None) is not None:
+            return [f"#{tid} {result.names[cid]} {conf:.2f}" for cid, tid, conf in zip(decs.class_id, decs.tracker_id, decs.confidence)]
+        return [f"{result.names[cid]} {conf:.2f}" for cid, conf in zip(decs.class_id, decs.confidence)]
 
-    annotated_frame = label_annotator.annotate(scene=annotated_frame, detections=detections, labels=labels)
+    if len(other_detections) > 0:
+        other_labels = get_labels(other_detections)
+        annotated_frame = label_annotator.annotate(scene=annotated_frame, detections=other_detections, labels=other_labels)
+    
+    if len(fall_detections) > 0:
+        fall_labels = get_labels(fall_detections)
+        annotated_frame = fall_label_annotator.annotate(scene=annotated_frame, detections=fall_detections, labels=fall_labels)
 
     cv2.imshow("Warehouse Tracking System", annotated_frame)
 

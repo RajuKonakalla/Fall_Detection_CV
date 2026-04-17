@@ -47,7 +47,7 @@ graph TD
 - **Inference Optimization**: Fully optimized using the OpenVINO toolkit, enabling efficient inference on Intel CPUs and GPUs.
 - **Robust Tracking**: Implements the ByteTrack algorithm to maintain consistent identity association across temporal sequences.
 - **Visual Analytics**:
-  - **High-Visibility Fall Alerts**: Dynamically detects the 'fall' class and highlights it with a thick, bright red bounding box for immediate anomaly notification.
+  - **High-Visibility Fall Alerts**: Dynamically detects the 'fall' class and highlights it with a thick, bright red bounding box and a red label header for immediate anomaly notification.
   - **Dynamic Tracing**: Employs `sv.TraceAnnotator` from the *supervision* library to visualize movement paths and trajectories of tracked individuals.
   - **Detailed Annotations**: Utilizes `sv.BoxAnnotator` and `sv.LabelAnnotator` to display clear bounding boxes, unique tracking IDs, object classes, and real-time confidence scores.
   - **Categorical Color Coding**: Dynamically allocates distinct, high-contrast colors to individual tracking IDs from a curated palette, enhancing visibility in crowded scenarios.
