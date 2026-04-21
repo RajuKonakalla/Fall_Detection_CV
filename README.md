@@ -1,3 +1,4 @@
+---
 
 ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square) ![Python](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square) ![OpenVINO](https://img.shields.io/badge/OpenVINO-2023-purple?style=flat-square) ![YOLO](https://img.shields.io/badge/YOLO-v26-green?style=flat-square)
 
@@ -18,7 +19,7 @@
 
 This repository hosts a high-performance computer vision solution designed for the automated detection of falls and tracking of individuals in real-time video feeds. Engineered for safety-critical environments such as warehouses and healthcare facilities, the system leverages the **YOLOv26** object detection model, heavily optimized with **Intel OpenVINO** for edge deployment.
 
-The core functionality integrates **ByteTrack** for persistent object tracking, ensuring that individuals are monitored consistently across frames even in complex scenes.
+The core functionality integrates a robust **ByteTrack**-based module for persistent object tracking, ensuring individuals are monitored consistently even in complex scenes.
 
 ## System Architecture
 
@@ -29,9 +30,9 @@ graph TD
     A[Input Source] -->|Video File/Stream| B(Frame Extraction)
     B --> C{YOLOv26 OpenVINO Model}
     C -->|Detections| D[ByteTrack Tracker]
-    D -->|Track IDs & BBoxes| E(Supervision Annotators)
-    E -->|Box & Label Annotations| F[Annotated Frame]
-    E -->|Movement Traces| F
+    D -->|Track IDs & BBoxes| E(Dynamic Supervision Annotators)
+    E -->|Resolution-Scaled Boxes & Labels| F[Annotated Frame]
+    E -->|Optimized Movement Traces| F
     F --> G[Display Window]
     G -->|'q' Key| H[Exit]
     G -->|Next Frame| B
@@ -45,11 +46,11 @@ graph TD
 
 - **High-Fidelity Detection**: Deploys the YOLOv26 architecture for state-of-the-art accuracy in person detection.
 - **Inference Optimization**: Fully optimized using the OpenVINO toolkit, enabling efficient inference on Intel CPUs and GPUs.
-- **Robust Tracking**: Implements the ByteTrack algorithm to maintain consistent identity association across temporal sequences.
-- **Visual Analytics**:
+- **Robust Tracking**: Implements a customized `ByteTrackTracker` to maintain consistent identity association across temporal sequences.
+- **Responsive Visual Analytics**:
+  - **Resolution-Aware Scaling**: Automatically scaling text thickness, padding, and box thickness dynamically over video dimension to keep visuals clean under any source resolution.
   - **High-Visibility Fall Alerts**: Dynamically detects the 'fall' class and highlights it with a thick, bright red bounding box and a red label header for immediate anomaly notification.
-  - **Dynamic Tracing**: Employs `sv.TraceAnnotator` from the *supervision* library to visualize movement paths and trajectories of tracked individuals.
-  - **Detailed Annotations**: Utilizes `sv.BoxAnnotator` and `sv.LabelAnnotator` to display clear bounding boxes, unique tracking IDs, object classes, and real-time confidence scores.
+  - **Optimized Tracing**: Employs an optimized `sv.TraceAnnotator` enforcing short trace lengths (`trace_length=20`) to create a clear, clutter-free trail of movements.
   - **Categorical Color Coding**: Dynamically allocates distinct, high-contrast colors to individual tracking IDs from a curated palette, enhancing visibility in crowded scenarios.
 - **Versatile Input Handling**: Supports processing of both live streams and pre-recorded high-definition video footage.
 
@@ -83,7 +84,7 @@ Ensure the following runtimes and libraries are installed on your system:
 ## Usage
 
 1.  **Configure Input**
-    Place your target video file in the project root. The default configuration expects `falls.mp4`. To use a different file, modify the source path in `run.py`.
+    Place your target video file in the project root. The default configuration processes `ppt5.mp4` by default. To use a different file, modify the `cv2.VideoCapture()` source path in `run.py`.
 
 2.  **Execute the System**
     ```bash
@@ -91,7 +92,7 @@ Ensure the following runtimes and libraries are installed on your system:
     ```
 
 3.  **Operation**
-    The "Warehouse Tracking System" window will launch, displaying the processed feed with overlay analytics. Press `q` to terminate the application.
+    The "Warehouse Tracking System" window will launch, displaying the processed feed with overlay analytics in a 1024x576 resized window. Press `q` to terminate the application.
 
 ## Authors
 
